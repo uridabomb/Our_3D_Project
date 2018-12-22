@@ -48,7 +48,7 @@ def build_mst(chains0, chains1):
             for i, x0ia in enumerate(ch0):
                 for j, x1jb in enumerate(ch1):
                     x0jb, x1ia = ch0[b][j], ch1[a][i]
-                    distance = (x0ia - x0jb).norm() - (x1ia - x1jb).norm()
+                    distance = abs((x0ia - x0jb).norm() - (x1ia - x1jb).norm())
                     if distance < min_distance:
                         min_distance = distance
                         s, t = i, j
