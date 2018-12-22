@@ -34,7 +34,8 @@ def build_mst(chains0, chains1):
     """
     finds the minimum spanning tree of a structure, represented by a list of chains.
     the nodes are the chains, and the minimal distance between two atoms in pair of chains is an edge.
-    :param chains:
+    :param chains0:
+    :param chains1:
     :return: mst as array
     """
     n = len(chains0)
