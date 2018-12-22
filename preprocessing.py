@@ -13,19 +13,13 @@ def parse_chains(pdbfilename):
     models = list(structure)
     assert len(models) > 1
 
-    for chain in models[0]:
-        chains0.append([])
-        for residue in chain:
-            if 'CA' in residue:  # residue is amino-acid (aa)
-                vector = residue['CA'].get_vector()
-                chains0[-1].append(vector)
-
-    for chain in models[-1]:
-        chains1.append([])
-        for residue in chain:
-            if 'CA' in residue:  # residue is amino-acid (aa)
-                vector = residue['CA'].get_vector()
-                chains1[-1].append(vector)
+    for model, chains in zip((models[0], models[-1]), (chains0, chains1)):
+        for chain in model:
+            chains.append([])
+            for residue in chain:
+                if 'CA' in residue:  # residue is amino-acid (aa)
+                    vector = residue['CA'].get_vector()
+                    chains[-1].append(vector)
 
     return chains0, chains1
 
@@ -72,14 +66,6 @@ def find_virtualbonds(chains0, chains1):
                 bonds.append((a, nodes[b][a], b, nodes[a][b]))
 
     return bonds
-
-
-def run(morph):
-    chains0 = parse_chains('data/{}/A.pdb'.format(morph))
-    chains1 = parse_chains('data/{}/B.pdb'.format(morph))
-    for a, b in zip(chains0, chains1):
-        assert len(a) == len(b)
-        print(len(a), len(b))
 
 
 _chains0, _chains1 = parse_chains('data/example.pdb')
