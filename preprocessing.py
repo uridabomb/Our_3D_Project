@@ -21,6 +21,10 @@ def parse_chains(pdbfilename):
                     vector = residue['CA'].get_vector()
                     chains[-1].append(vector)
 
+    assert len(chains0) == len(chains1)
+    for (x0, x1) in zip(chains0, chains1):
+        assert len(x0) == len(x1)
+
     return chains0, chains1
 
 
@@ -35,13 +39,12 @@ def build_mst(chains0, chains1):
     n = len(chains0)
     graph = np.zeros((n, n))
     nodes = -np.ones((n, n))  # nodes[a][b] is the index of the atom in the b'th chain which the edge from a'th chain is connected to.
-    for a, ch0 in enumerate(chains0):
-        for b, ch1 in enumerate(chains1):
+    for a, (x0a, x1a) in enumerate(zip(chains0, chains1)):
+        for b, (x0b, x1b) in enumerate(zip(chains0, chains1)):
             s = t = 0
             min_distance = float('inf')
-            for i, x0ia in enumerate(ch0):
-                for j, x1jb in enumerate(ch1):
-                    x0jb, x1ia = ch0[b][j], ch1[a][i]
+            for i, (x0ia, x1ia) in enumerate(zip(x0a, x1a)):
+                for j, (x0jb, x1jb), in enumerate(zip(x0b, x1b)):
                     distance = abs((x0ia - x0jb).norm() - (x1ia - x1jb).norm())
                     if distance < min_distance:
                         min_distance = distance
@@ -51,8 +54,8 @@ def build_mst(chains0, chains1):
             nodes[a][b] = t
             nodes[b][a] = s
 
-    _mst = minimum_spanning_tree(graph)
-    return _mst.toarray().astype(float), nodes.astype(int)
+    mst = minimum_spanning_tree(graph)
+    return mst.toarray().astype(float), nodes.astype(int)
 
 
 def find_virtualbonds(chains0, chains1):
