@@ -75,6 +75,10 @@ def get_coordinates(chains0, bonds):
     return [(chains0[ch0][idx0], chains0[ch1][idx1]) for ch0, idx0, ch1, idx1 in bonds]
 
 
+def calc_angles():
+    pass
+
+
 _chains0, _chains1 = parse_chains('data/2JUV.pdb')
 _bonds = find_virtualbonds(_chains0, _chains1)
 print(get_coordinates(_chains0, _bonds))
