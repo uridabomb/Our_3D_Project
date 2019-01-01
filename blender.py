@@ -2,6 +2,12 @@ import bpy
 import math
 
 
+def calc_direction(x1, y1, z1, x2, y2, z2):
+    vx, vy, vz = x2-x1, y2-y1, z2-z1
+    length = math.sqrt(vx*vx + vy*vy + vz*vz)
+    return vz/length, vy/length, vz/length
+
+
 class BlenderScene(object):
     def __init__(self):
         self.cylinders_count = 0
@@ -15,10 +21,11 @@ class BlenderScene(object):
     def add_cilynder(self, x1, y1, z1, x2, y2, z2, r=.1, name=None):
         dx, dy, dz = x2 - x1, y2 - y1, z2 - z1
         dist = math.sqrt(dx**2 + dy**2 + dz**2)
+        location = ((x1 + x2)/2, (y1 + y2)/2, (z1 + z2)/2)
 
         bpy.ops.mesh.primitive_cylinder_add(radius=r,
                                             depth=dist,
-                                            location=(dx/2 + x1, dy/2 + y1, dz/2 + z1))
+                                            location=location)
 
         name = name or 'cylinder_{}'.format(self.cylinders_count)
         self.cylinders_count += 1
@@ -33,8 +40,8 @@ class BlenderScene(object):
         return bpy.data.objects[name]
 
     def add_sphere(self, x, y, z, r=.5, name=None):
-        bpy.ops.mesh.primitive_ico_sphere_add(size=r,
-                                              location=(x, y, z))
+        bpy.ops.mesh.primitive_uv_sphere_add(size=r,
+                                             location=(x, y, z))
 
         name = name or 'sphere_{}'.format(self.spheres_count)
         self.spheres_count += 1
@@ -56,11 +63,16 @@ class BlenderScene(object):
         m2 = self.add_boolean_modifier(s2, subtraction_cylinder)
 
         subtraction_cylinder.hide = True
+        subtraction_cylinder.hide_render = True
 
         name = name or 'joint_{}'.format(len(self.joints))
         self.joints[name] = (c, subtraction_cylinder, s1, m1, s2, m2)
 
         return self.joints[name]
+
+    def add_ball_and_socket_joint(self, z1, y1, x2, y2, z2, name=None):
+        # TODO
+        pass
 
     def add_boolean_modifier(self, target_obj, subtraction_obj):
         name = 'bool_{}'.format(self.boolean_modifiers_count)
