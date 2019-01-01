@@ -1,8 +1,6 @@
 import bpy
 import math
 
-from mathutils import Euler, Vector
-
 
 def add_cylinder(x1, y1, z1, x2, y2, z2, r=.1):
     dx, dy, dz = x2 - x1, y2 - y1, z2 - z1
@@ -40,6 +38,11 @@ def calc_rotation(x1, y1, z1, x2, y2, z2):
     return phi, theta
 
 
+def calc_location(x1, y1, z1, x2, y2, z2):
+    vx, vy, vz = x2 - x1, y2 - y1, z2 - z1
+    return math.sqrt(vx * vx + vy * vy + vz * vz)
+
+
 def rotate(obj, phi, theta):
     obj.rotation_euler[1] = theta
     obj.rotation_euler[2] = phi
@@ -72,15 +75,6 @@ def groupify(named, objs):
 # TODO: need to compute rotations and use them when creating the objects
 #       use example in `add_cylinder` in blender.py
 def create_joint(length, size=1.0):
-    # distance = calc_distance(x1, y2, z1, x2, y2, z2)
-    # direction = calc_direction(x1, y1, z1, x2, y2, z2)
-    # phi, theta = calc_rotation(x1, y1, z1, x2, y2, z2)
-
-    # target = bpy.data.objects.new('Target', None)
-
-    # dx, dy, dz = direction
-    # dvec = Vector(direction)
-
     x1, y1, z1 = 0, 0, 0
     x2, y2, z2 = 0, 0, length
     dx, dy, dz = 0, 0, 1
@@ -88,9 +82,6 @@ def create_joint(length, size=1.0):
     size_socket = size
     size_ball = .9 * size
     size_wrapper = (size_socket + size_ball) / 2
-
-    # NOTE: probably the size == radius...
-    r_socket, r_ball, r_wrapper = size_socket / 2, size_ball / 2, size_wrapper / 2
 
     socket_ball_diff = size_socket - size_ball
     socket_wrapper_diff = size_socket - size_ball
@@ -111,19 +102,16 @@ def create_joint(length, size=1.0):
     bpy.ops.mesh.primitive_uv_sphere_add(size=size_socket, location=location_socket)
     bpy.context.active_object.name = '__Socket'
     socket = bpy.data.objects['__Socket']
-    # rotate(socket, phi, theta)
 
     bpy.ops.mesh.primitive_uv_sphere_add(size=size_ball, location=location_ball)
     bpy.context.active_object.name = '__Ball'
     ball = bpy.data.objects['__Ball']
-    # rotate(ball, phi, theta)
 
     bpy.ops.mesh.primitive_uv_sphere_add(size=size_wrapper, location=location_wrapper)
     bpy.context.active_object.name = '__BallWrapper'
     ball_wrapper = bpy.data.objects['__BallWrapper']
     ball_wrapper.hide = True
     ball_wrapper.hide_render = True
-    # rotate(ball_wrapper, phi, theta)
 
     modifier = socket.modifiers.new(type='BOOLEAN', name='BallModifier')
     modifier.object = ball_wrapper
@@ -143,9 +131,6 @@ def create_joint(length, size=1.0):
     bpy.context.active_object.name = '__BallCylinder'
     ball_cylinder = bpy.data.objects['__BallCylinder']
 
-    # _phi, _theta = calc_rotation(tx, ty, tz, x2, y2, z2)
-    # rotate(ball_cylinder,  _phi, _theta)
-
     # socket cylinder
     radius = .2 * size
 
@@ -160,9 +145,6 @@ def create_joint(length, size=1.0):
     bpy.context.active_object.name = '__SocketCylinder'
     socket_cylinder = bpy.data.objects['__SocketCylinder']
 
-    # _phi, _theta = calc_rotation(tx, ty, tz, x1, y1, z1)
-    # rotate(socket_cylinder, _phi, _theta)
-
     # safety
     radius = .05 * size
     tdx, tdy, tdz = -dx * size_ball, -dy * size_ball, -dz * size_ball
@@ -176,7 +158,6 @@ def create_joint(length, size=1.0):
     bpy.ops.mesh.primitive_cylinder_add(radius=radius, depth=distance, location=(x, y, z))
     bpy.context.active_object.name = '__Safety'
     safety = bpy.data.objects['__Safety']
-    # rotate(safety, phi, theta)
 
     # constraint (safety space)
     # TODO: need to get height and width or compute them via angles & radius (of the ball?)
@@ -188,48 +169,37 @@ def create_joint(length, size=1.0):
     constraint.scale = (depth, depth, depth)  # TODO: need to use height and width
     constraint.hide = True
     constraint.hide_render = True
-    # rotate(constraint, phi, theta)
 
     modifier = socket.modifiers.new(type='BOOLEAN', name='ConstraintModifier')
     modifier.object = constraint
     modifier.operation = 'DIFFERENCE'
 
     objs = (socket, ball, ball_wrapper, ball_cylinder, socket_cylinder, safety, constraint)
+    _, joint = groupify('_Joint', objs)
 
-    # rotate?
-    # for obj in objs:
-    #    pass
-    #    obj.rotation_mode = 'QUATERNION'
-    #    obj.rotation_quaternion = dvec.to_track_quat('Z','Y')
-
-    # group, dupligroup = groupify('_Joint', objs)
-
-    # for obj in group.objects:
-    # rotate(obj, phi, theta)
-    # obj.rotation_euler = Euler(direction, 'XYZ')
-
-    return objs
+    return joint
 
 
-x1, y1, z1 = 1, 2, 3
-x2, y2, z2 = 10, 0, 1
+def place_joint(joint, x1, y1, z1, x2, y2, z2):
+    phi, theta = calc_rotation(x1, y1, z1, x2, y2, z2)
+
+    joint.location = (x1, y1, z1)
+    joint.rotation_euler[1] = theta
+    joint.rotation_euler[2] = phi
+
+
+#x1, y1, z1 = 1, 2, 3
+#x2, y2, z2 = 10, 0, 1
 
 # x1, y1, z1 = 0, 0, 0
 # x2, y2, z2 = 10, 0, 0
 
+x1, y1, z1 = 17, 3, 15
+x2, y2, z2 = 4, 10, 6
 
-add_cylinder(x1, y1, z1, x2, y2, z2)
+points = x1, y1, z1, x2, y2, z2
 
-objs = create_joint(calc_distance(x1, y1, z1, x2, y2, z2))
-
-groupify('_Joint', objs)
-
-for obj in objs:
-    obj.select = True
-
-location = ((x1 + x2)/2, (y1 + y2)/2, (z1 + z2)/2)
-direction = calc_direction(x1, y1, z1, x2, y2, z2)
-
-bpy.ops.transform.translate(value=location)
-bpy.ops.transform.rotate(axis=direction)
+add_cylinder(*points)
+joint = create_joint(calc_distance(x1, y1, z1, x2, y2, z2))
+place_joint(joint, *points)
 
