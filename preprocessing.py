@@ -104,8 +104,13 @@ def joint_angles(_chains0, _chains1, _bonds):
     return res
 
 
+def cube_lengths(pin_length):
+    return[[pin_length*math.sin(angle[0]), pin_length*math.sin(angle[1])]
+                for angle in joint_angles(_chains0, _chains1, _bonds)]
+
+
 _chains0, _chains1 = parse_chains('data/2JUV.pdb')
 _bonds = find_virtualbonds(_chains0, _chains1)
 print(get_coordinates(_chains0, _bonds))
 print(get_coordinates(_chains1, _bonds))
-print(joint_angles(_chains0, _chains1, _bonds))
+print(cube_lengths(0.05))
