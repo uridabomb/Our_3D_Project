@@ -90,14 +90,18 @@ def calc_rotation(x1, y1, z1, x2, y2, z2):
 
 
 def joint_angles(_chains0, _chains1, _bonds):
-    Conf_a_Chain_a, Conf_a_Chain_b = get_coordinates(_chains0, _bonds)[0]
-    Conf_b_Chain_a, Conf_b_Chain_b = get_coordinates(_chains1, _bonds)[0]
-    mid_point = Vector((Conf_a_Chain_a + Conf_a_Chain_b)._ar / (np.array(2)))
-    first_conf_angles = calc_rotation(mid_point[0], mid_point[1], mid_point[2],
-                                      Conf_a_Chain_b[0], Conf_a_Chain_b[1], Conf_a_Chain_b[2])
-    second_conf_angles = calc_rotation(mid_point[0], mid_point[1], mid_point[2],
-                                       Conf_b_Chain_b[0], Conf_b_Chain_b[1], Conf_b_Chain_b[2])
-    return [angle_a - angle_b for angle_a, angle_b in zip(first_conf_angles, second_conf_angles)]
+    res = []
+    for i in range(len(_bonds)):
+        Conf_a_Chain_a, Conf_a_Chain_b = get_coordinates(_chains0, _bonds)[i]
+        Conf_b_Chain_a, Conf_b_Chain_b = get_coordinates(_chains1, _bonds)[i]
+        mid_point = Vector((Conf_a_Chain_a + Conf_a_Chain_b)._ar / (np.array(2)))
+
+        first_conf_angles = calc_rotation(mid_point[0], mid_point[1], mid_point[2],
+                                          Conf_a_Chain_b[0], Conf_a_Chain_b[1], Conf_a_Chain_b[2])
+        second_conf_angles = calc_rotation(mid_point[0], mid_point[1], mid_point[2],
+                                           Conf_b_Chain_b[0], Conf_b_Chain_b[1], Conf_b_Chain_b[2])
+        res.append([angle_a - angle_b for angle_a, angle_b in zip(first_conf_angles, second_conf_angles)])
+    return res
 
 
 _chains0, _chains1 = parse_chains('data/2JUV.pdb')
