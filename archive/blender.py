@@ -14,9 +14,33 @@ class BlenderScene(object):
         self.spheres_count = 0
         self.boolean_modifiers_count = 0
 
+        self.groups = {}
         self.joints = {}
 
         self.delete_element('Cube')
+
+    def groupify(self, objs, name=None):
+        name = name or 'Group_{}'.format(len(self.groups))
+        groups = bpy.data.groups
+
+        # alias existing group, or generate new group and alias that
+        group = groups.get(name, groups.new(name))
+
+        for obj in objs:
+            if obj.name not in group.objects:
+                group.objects.link(obj)
+
+        group = bpy.data.groups[name]
+        groupobj = bpy.data.objects.new(name, None)
+        # groupobj.dupli_type = 'GROUP'
+        # groupobj.dupli_group = group
+        bpy.context.scene.objects.link(groupobj)
+
+        for obj in objs:
+            obj.parent = groupobj
+
+        self.groups[name] = group, groupobj
+        return group, groupobj
 
     def add_cilynder(self, x1, y1, z1, x2, y2, z2, r=.1, name=None):
         dx, dy, dz = x2 - x1, y2 - y1, z2 - z1
@@ -70,7 +94,8 @@ class BlenderScene(object):
 
         return self.joints[name]
 
-    def add_ball_and_socket_joint(self, z1, y1, x2, y2, z2, name=None):
+    def add_ball_and_socket_joint(self, z1, y1, x2, y2, z2, name=None, color=(.5, .0, 1)):
+        name = name or '_Joint_{}'.format(len(self.joints))
         # TODO
         pass
 
