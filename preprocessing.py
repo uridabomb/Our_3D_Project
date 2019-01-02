@@ -2,7 +2,7 @@ from Bio.PDB import *
 from scipy.sparse.csgraph import minimum_spanning_tree
 
 import numpy as np
-
+import math
 
 def parse_chains(pdbfilename):
     parser = PDBParser()
@@ -79,6 +79,29 @@ def calc_angles():
     pass
 
 
+def calc_rotation(x1, y1, z1, x2, y2, z2):
+    vx, vy, vz = x2 - x1, y2 - y1, z2 - z1
+    distance = math.sqrt(vx * vx + vy * vy + vz * vz)
+
+    phi = math.atan2(vy, vx)
+    theta = math.acos(vz / distance)
+
+    return phi, theta
+
+
+def joint_angles(_chains0, _chains1, _bonds):
+    Conf_a_Chain_a, Conf_a_Chain_b = get_coordinates(_chains0, _bonds)[0]
+    Conf_b_Chain_a, Conf_b_Chain_b = get_coordinates(_chains1, _bonds)[0]
+    mid_point = Vector((Conf_a_Chain_a + Conf_a_Chain_b)._ar / (np.array(2)))
+    first_conf_angles = calc_rotation(mid_point[0], mid_point[1], mid_point[2],
+                                      Conf_a_Chain_b[0], Conf_a_Chain_b[1], Conf_a_Chain_b[2])
+    second_conf_angles = calc_rotation(mid_point[0], mid_point[1], mid_point[2],
+                                       Conf_b_Chain_b[0], Conf_b_Chain_b[1], Conf_b_Chain_b[2])
+    return [angle_a - angle_b for angle_a, angle_b in zip(first_conf_angles, second_conf_angles)]
+
+
 _chains0, _chains1 = parse_chains('data/2JUV.pdb')
 _bonds = find_virtualbonds(_chains0, _chains1)
 print(get_coordinates(_chains0, _bonds))
+print(get_coordinates(_chains1, _bonds))
+print(joint_angles(_chains0, _chains1, _bonds))
