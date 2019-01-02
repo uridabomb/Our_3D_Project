@@ -2,19 +2,20 @@ import bpy
 import math
 
 
-def add_cylinder(x1, y1, z1, x2, y2, z2, r=.1):
-    dx, dy, dz = x2 - x1, y2 - y1, z2 - z1
-    dist = math.sqrt(dx ** 2 + dy ** 2 + dz ** 2)
+VIOLET_MATERIAL = bpy.data.materials.new("PKHG")
+VIOLET_MATERIAL.diffuse_color = (.5, 0, 1)
 
-    bpy.ops.mesh.primitive_cylinder_add(radius=r,
-                                        depth=dist,
-                                        location=(dx / 2 + x1, dy / 2 + y1, dz / 2 + z1))
+CYAN_MATERIAL = bpy.data.materials.new("PKHG")
+CYAN_MATERIAL.diffuse_color = (1, 2, 3)
 
-    phi = math.atan2(dy, dx)
-    theta = math.acos(dz / dist)
+WHITE_MATERIAL = bpy.data.materials.new("PKHG")
+WHITE_MATERIAL.diffuse_color = (5, 5, 5)
 
-    bpy.context.object.rotation_euler[1] = theta
-    bpy.context.object.rotation_euler[2] = phi
+GOLD_MATERIAL = bpy.data.materials.new("PKHG")
+GOLD_MATERIAL.diffuse_color = (3, 2, 1)
+
+GREEN_MATERIAL = bpy.data.materials.new("PKHG")
+GREEN_MATERIAL.diffuse_color = (1, 4, 2)
 
 
 def calc_distance(x1, y1, z1, x2, y2, z2):
@@ -36,16 +37,6 @@ def calc_rotation(x1, y1, z1, x2, y2, z2):
     theta = math.acos(vz / distance)
 
     return phi, theta
-
-
-def calc_location(x1, y1, z1, x2, y2, z2):
-    vx, vy, vz = x2 - x1, y2 - y1, z2 - z1
-    return math.sqrt(vx * vx + vy * vy + vz * vz)
-
-
-def rotate(obj, phi, theta):
-    obj.rotation_euler[1] = theta
-    obj.rotation_euler[2] = phi
 
 
 def groupify(named, objs):
@@ -74,7 +65,7 @@ def groupify(named, objs):
 # TODO: need to get constraints (angles or height+width?) as well
 # TODO: need to compute rotations and use them when creating the objects
 #       use example in `add_cylinder` in blender.py
-def create_joint(length, size=1.0):
+def create_joint(length, size=1.0, cut=False):
     x1, y1, z1 = 0, 0, 0
     x2, y2, z2 = 0, 0, length
     dx, dy, dz = 0, 0, 1
@@ -177,7 +168,16 @@ def create_joint(length, size=1.0):
     objs = (socket, ball, ball_wrapper, ball_cylinder, socket_cylinder, safety, constraint)
     _, joint = groupify('_Joint', objs)
 
-    return joint
+    socket.active_material = CYAN_MATERIAL
+    socket_cylinder.active_material = CYAN_MATERIAL
+    ball.active_material = VIOLET_MATERIAL
+    ball_cylinder.active_material = VIOLET_MATERIAL
+    safety.active_material = VIOLET_MATERIAL
+
+    if cut:
+        cut_objs((socket, ball, ball_cylinder, socket_cylinder, safety))
+
+    return joint, objs
 
 
 def place_joint(joint, x1, y1, z1, x2, y2, z2):
@@ -188,18 +188,31 @@ def place_joint(joint, x1, y1, z1, x2, y2, z2):
     joint.rotation_euler[2] = phi
 
 
-#x1, y1, z1 = 1, 2, 3
-#x2, y2, z2 = 10, 0, 1
+def add_joint(x1, y1, z1, x2, y2, z2):
+    joint = create_joint(calc_distance(x1, y1, z1, x2, y2, z2))
+    place_joint(joint, x1, y1, z1, x2, y2, z2)
 
-# x1, y1, z1 = 0, 0, 0
-# x2, y2, z2 = 10, 0, 0
+    return joint
 
-x1, y1, z1 = 17, 3, 15
-x2, y2, z2 = 4, 10, 6
 
-points = x1, y1, z1, x2, y2, z2
+def cut_objs(objs):
+    bpy.ops.mesh.primitive_cube_add(radius=2, location=(2, 0, 0))
+    bpy.context.active_object.name = '__Cut'
+    cut = bpy.data.objects['__Cut']
+    cut.scale = (1, 100, 100)
+    cut.hide = True
+    cut.hide_render = True
 
-add_cylinder(*points)
-joint = create_joint(calc_distance(x1, y1, z1, x2, y2, z2))
-place_joint(joint, *points)
+    for obj in objs:
+        modifier = obj.modifiers.new(type='BOOLEAN', name='CutModifier')
+        modifier.object = cut
+        modifier.operation = 'DIFFERENCE'
+
+
+bonds = [((0.79, -6.38, -3.73), (-2.86, 2.24, -2.94))]
+
+joint, objs = None, None
+for (x1, y1, z1), (x2, y2, z2) in bonds:
+    joint, objs = create_joint(calc_distance(x1, y1, z1, x2, y2, z2), cut=True)
+
 
