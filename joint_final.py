@@ -1,7 +1,6 @@
 import bpy
 import math
 
-
 VIOLET_MATERIAL = bpy.data.materials.new("PKHG")
 VIOLET_MATERIAL.diffuse_color = (.5, 0, 1)
 
@@ -62,17 +61,17 @@ def groupify(named, objs):
     return group, instance
 
 
-# TODO: need to get constraints (angles or height+width?) as well
-# TODO: need to compute rotations and use them when creating the objects
-#       use example in `add_cylinder` in blender.py
-def create_joint(length, size=1.0, cut=False):
+def create_joint(length, constraint_x, constraint_y, size=1.0, cut=False):
     x1, y1, z1 = 0, 0, 0
     x2, y2, z2 = 0, 0, length
     dx, dy, dz = 0, 0, 1
 
     size_socket = size
-    size_ball = .9 * size
+    size_ball = .95 * size
     size_wrapper = (size_socket + size_ball) / 2
+
+    size_snap = .1 * size
+    snap_diff = (size_socket + size_ball) / 2 - 0.95 * size_snap
 
     socket_ball_diff = size_socket - size_ball
     socket_wrapper_diff = size_socket - size_ball
@@ -137,12 +136,12 @@ def create_joint(length, size=1.0, cut=False):
     socket_cylinder = bpy.data.objects['__SocketCylinder']
 
     # safety
-    radius = .05 * size
+    radius = .02 * size
     tdx, tdy, tdz = -dx * size_ball, -dy * size_ball, -dz * size_ball
     tx, ty, tz = x_ball + tdx, y_ball + tdy, z_ball + tdz
     bottom_ball_x, bottom_ball_y, bottom_ball_z = tx, ty, tz
     middle_x, middle_y, middle_z = (bottom_ball_x + bottom_socket_x) / 2, (bottom_ball_y + bottom_socket_y) / 2, (
-                bottom_ball_z + bottom_socket_z) / 2
+            bottom_ball_z + bottom_socket_z) / 2
     distance = calc_distance(bottom_ball_x, bottom_ball_y, bottom_ball_z, middle_x, middle_y, middle_z)
     safety_depth = distance
     x, y, z = (bottom_ball_x + middle_x) / 2, (bottom_ball_y + middle_y) / 2, (bottom_ball_z + middle_z) / 2
@@ -151,13 +150,11 @@ def create_joint(length, size=1.0, cut=False):
     safety = bpy.data.objects['__Safety']
 
     # constraint (safety space)
-    # TODO: need to get height and width or compute them via angles & radius (of the ball?)
-    # height, width = 1, 2
-    depth = 1.5 * safety_depth
+    constraint_depth = 1.1 * safety_depth
     bpy.ops.mesh.primitive_cube_add(radius=1, location=(bottom_ball_x, bottom_ball_y, bottom_ball_z))
     bpy.context.active_object.name = '__Constraint'
     constraint = bpy.data.objects['__Constraint']
-    constraint.scale = (depth, depth, depth)  # TODO: need to use height and width
+    constraint.scale = (constraint_x, constraint_y, constraint_depth)
     constraint.hide = True
     constraint.hide_render = True
 
@@ -165,7 +162,20 @@ def create_joint(length, size=1.0, cut=False):
     modifier.object = constraint
     modifier.operation = 'DIFFERENCE'
 
-    objs = (socket, ball, ball_wrapper, ball_cylinder, socket_cylinder, safety, constraint)
+    # snap
+    _dx, _dy, _dz = 0, snap_diff, 0
+    x_snap, y_snap, z_snap = x_ball + _dx, y_ball + _dy, z_ball + _dz
+    location_snap = (x_snap, y_snap, z_snap)
+
+    bpy.ops.mesh.primitive_uv_sphere_add(size=size_snap, location=location_snap)
+    bpy.context.active_object.name = '__Snap'
+    snap = bpy.data.objects['__Snap']
+
+    modifier = socket.modifiers.new(type='BOOLEAN', name='SnapModifier')
+    modifier.object = snap
+    modifier.operation = 'DIFFERENCE'
+
+    objs = (socket, ball, ball_wrapper, ball_cylinder, socket_cylinder, safety, constraint, snap)
     _, joint = groupify('_Joint', objs)
 
     socket.active_material = CYAN_MATERIAL
@@ -173,9 +183,10 @@ def create_joint(length, size=1.0, cut=False):
     ball.active_material = VIOLET_MATERIAL
     ball_cylinder.active_material = VIOLET_MATERIAL
     safety.active_material = VIOLET_MATERIAL
+    snap.active_material = VIOLET_MATERIAL
 
     if cut:
-        cut_objs((socket, ball, ball_cylinder, socket_cylinder, safety))
+        cut_objs((socket, ball, ball_cylinder, socket_cylinder, safety, snap))
 
     return joint, objs
 
@@ -188,8 +199,8 @@ def place_joint(joint, x1, y1, z1, x2, y2, z2):
     joint.rotation_euler[2] = phi
 
 
-def add_joint(x1, y1, z1, x2, y2, z2):
-    joint = create_joint(calc_distance(x1, y1, z1, x2, y2, z2))
+def add_joint(x1, y1, z1, x2, y2, z2, constraint_x, constraint_y):
+    joint, _ = create_joint(calc_distance(x1, y1, z1, x2, y2, z2), constraint_x, constraint_y)
     place_joint(joint, x1, y1, z1, x2, y2, z2)
 
     return joint
@@ -210,9 +221,13 @@ def cut_objs(objs):
 
 
 bonds = [((0.79, -6.38, -3.73), (-2.86, 2.24, -2.94))]
+constraint_lengths = [(0.021463302826165993, 0.02654762928946491)]
 
-joint, objs = None, None
-for (x1, y1, z1), (x2, y2, z2) in bonds:
-    joint, objs = create_joint(calc_distance(x1, y1, z1, x2, y2, z2), cut=True)
+_joint, _objs = None, None
+for ((x1, y1, z1), (x2, y2, z2)), (_constraint_x, _constraint_y) in zip(bonds, constraint_lengths):
+    _joint, _objs = create_joint(calc_distance(x1, y1, z1, x2, y2, z2), _constraint_x, _constraint_y, cut=False)
+    place_joint(_joint, x1, y1, z1, x2, y2, z2)
+
+
 
 
