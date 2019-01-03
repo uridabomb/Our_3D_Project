@@ -114,8 +114,12 @@ def get_constraint_lengths(chains0, chains1, bonds, pin_length=0.05, pin_radius=
     return [(calc(a1), calc(a2)) for a1, a2 in get_joint_angles(chains0, chains1, bonds)]
 
 
-_chains0, _chains1 = parse_chains('data/2JUV.pdb')
-_bonds = find_virtualbonds(_chains0, _chains1)
-print(get_coordinates(_chains0, _bonds))
-print(get_coordinates(_chains1, _bonds))
-print(get_constraint_lengths(_chains0, _chains1, _bonds))
+if __name__ == '__main__':
+    protein = '2RVB'
+    print('{}:'.format(protein))
+    _chains0, _chains1 = parse_chains('data/{}.pdb'.format(protein))
+    _bonds = find_virtualbonds(_chains0, _chains1)
+    print('  bonds: {}'.format(_bonds))
+    print('  A coordinates: {}'.format(get_coordinates(_chains0, _bonds)))
+    print('  B coordinates: {}'.format(get_coordinates(_chains1, _bonds)))
+    print('  Constraint dimensions: {}'.format(get_constraint_lengths(_chains0, _chains1, _bonds)))
