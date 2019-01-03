@@ -4,6 +4,7 @@ from scipy.sparse.csgraph import minimum_spanning_tree
 import numpy as np
 import math
 
+
 def parse_chains(pdbfilename):
     parser = PDBParser()
     structure = parser.get_structure('PROTEIN', pdbfilename)
@@ -38,7 +39,8 @@ def build_mst(chains0, chains1):
     """
     n = len(chains0)
     graph = np.zeros((n, n))
-    nodes = -np.ones((n, n))  # nodes[a][b] is the index of the atom in the b'th chain which the edge from a'th chain is connected to.
+    nodes = -np.ones((n,
+                      n))  # nodes[a][b] is the index of the atom in the b'th chain which the edge from a'th chain is connected to.
     for a, (x0a, x1a) in enumerate(zip(chains0, chains1)):
         for b, (x0b, x1b) in enumerate(zip(chains0, chains1)):
             s = t = 0
@@ -89,11 +91,11 @@ def calc_rotation(x1, y1, z1, x2, y2, z2):
     return phi, theta
 
 
-def joint_angles(_chains0, _chains1, _bonds):
+def get_joint_angles(chains0, chains1, bonds):
     res = []
-    for i in range(len(_bonds)):
-        Conf_a_Chain_a, Conf_a_Chain_b = get_coordinates(_chains0, _bonds)[i]
-        Conf_b_Chain_a, Conf_b_Chain_b = get_coordinates(_chains1, _bonds)[i]
+    for i in range(len(bonds)):
+        Conf_a_Chain_a, Conf_a_Chain_b = get_coordinates(chains0, bonds)[i]
+        Conf_b_Chain_a, Conf_b_Chain_b = get_coordinates(chains1, bonds)[i]
         mid_point = Vector((Conf_a_Chain_a + Conf_a_Chain_b)._ar / (np.array(2)))
 
         first_conf_angles = calc_rotation(mid_point[0], mid_point[1], mid_point[2],
@@ -101,16 +103,19 @@ def joint_angles(_chains0, _chains1, _bonds):
         second_conf_angles = calc_rotation(mid_point[0], mid_point[1], mid_point[2],
                                            Conf_b_Chain_b[0], Conf_b_Chain_b[1], Conf_b_Chain_b[2])
         res.append([angle_a - angle_b for angle_a, angle_b in zip(first_conf_angles, second_conf_angles)])
+
     return res
 
 
-def cube_lengths(pin_length):
-    return[[pin_length*math.sin(angle[0]), pin_length*math.sin(angle[1])]
-                for angle in joint_angles(_chains0, _chains1, _bonds)]
+def get_constraint_lengths(chains0, chains1, bonds, pin_length=0.05, pin_radius=0.02):
+    def calc(x):
+        return abs(2 * pin_length * math.sin(x)) + pin_radius
+
+    return [(calc(a1), calc(a2)) for a1, a2 in get_joint_angles(chains0, chains1, bonds)]
 
 
 _chains0, _chains1 = parse_chains('data/2JUV.pdb')
 _bonds = find_virtualbonds(_chains0, _chains1)
 print(get_coordinates(_chains0, _bonds))
 print(get_coordinates(_chains1, _bonds))
-print(cube_lengths(0.05))
+print(get_constraint_lengths(_chains0, _chains1, _bonds))
