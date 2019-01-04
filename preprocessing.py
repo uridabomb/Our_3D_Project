@@ -47,7 +47,7 @@ def build_mst(chains0, chains1):
             min_distance = float('inf')
             for i, (x0ia, x1ia) in enumerate(zip(x0a, x1a)):
                 for j, (x0jb, x1jb), in enumerate(zip(x0b, x1b)):
-                    distance = abs((x0ia - x0jb).norm() - (x1ia - x1jb).norm())
+                    distance = abs((x0ia - x0jb).norm() - (x1ia - x1jb).norm()) + (x0ia - x0jb).norm()
                     if distance < min_distance:
                         min_distance = distance
                         s, t = i, j
@@ -115,7 +115,7 @@ def get_constraint_lengths(chains0, chains1, bonds, pin_length=0.05, pin_radius=
 
 
 if __name__ == '__main__':
-    protein = '2RVB'
+    protein = '2JUV'
     print('{}:'.format(protein))
     _chains0, _chains1 = parse_chains('data/{}.pdb'.format(protein))
     _bonds = find_virtualbonds(_chains0, _chains1)
