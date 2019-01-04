@@ -91,9 +91,33 @@ def calc_rotation(x1, y1, z1, x2, y2, z2):
     return phi, theta
 
 
+def get_chain_angle_constraints(chain, bond, first_chain=True):
+    index_in_bond = 1 if first_chain else 3
+    res = []
+    curr = chain[0][bond[index_in_bond]]
+    curr2 = chain[1][bond[index_in_bond]]
+    if (bond[index_in_bond] == len(chain[0])-1):
+        next = chain[0][bond[index_in_bond] - 1]
+        next2 = chain[1][bond[index_in_bond] - 1]
+    else:
+        next = chain[0][bond[index_in_bond] + 1]
+        next2 = chain[1][bond[index_in_bond] + 1]
+    first_conf_angles = calc_rotation(curr[0], curr[1], curr[2],
+                                      next[0], next[1], next[2])
+    second_conf_angles = calc_rotation(curr2[0], curr2[1], curr2[2],
+                                       next2[0], next2[1], next2[2])
+    if first_chain:
+        res.append([angle_a - angle_b for angle_a, angle_b in zip(first_conf_angles, second_conf_angles)])
+    else:
+        res.append([-(angle_a - angle_b) for angle_a, angle_b in zip(first_conf_angles, second_conf_angles)])
+    return res
+
+
 def get_joint_angles(chains0, chains1, bonds):
     res = []
     for i in range(len(bonds)):
+        res.append(get_chain_angle_constraints(chains0, bonds[i]))
+
         Conf_a_Chain_a, Conf_a_Chain_b = get_coordinates(chains0, bonds)[i]
         Conf_b_Chain_a, Conf_b_Chain_b = get_coordinates(chains1, bonds)[i]
         mid_point = Vector((Conf_a_Chain_a + Conf_a_Chain_b)._ar / (np.array(2)))
@@ -102,16 +126,20 @@ def get_joint_angles(chains0, chains1, bonds):
                                           Conf_a_Chain_b[0], Conf_a_Chain_b[1], Conf_a_Chain_b[2])
         second_conf_angles = calc_rotation(mid_point[0], mid_point[1], mid_point[2],
                                            Conf_b_Chain_b[0], Conf_b_Chain_b[1], Conf_b_Chain_b[2])
-        res.append([angle_a - angle_b for angle_a, angle_b in zip(first_conf_angles, second_conf_angles)])
+        res.append([[angle_a - angle_b for angle_a, angle_b in zip(first_conf_angles, second_conf_angles)]])
 
+        res.append(get_chain_angle_constraints(chains1, bonds[i], False))
     return res
 
 
 def get_constraint_lengths(chains0, chains1, bonds, pin_length=0.05, pin_radius=0.02):
     def calc(x):
         return abs(2 * pin_length * math.sin(x)) + pin_radius
-
-    return [(calc(a1), calc(a2)) for a1, a2 in get_joint_angles(chains0, chains1, bonds)]
+    res = []
+    joints_anlges = get_joint_angles(chains0, chains1, bonds)
+    for joint in joints_anlges:
+        res.append([(calc(a1), calc(a2)) for a1, a2 in joint])
+    return res
 
 
 if __name__ == '__main__':
