@@ -77,6 +77,16 @@ def get_coordinates(chains0, bonds):
     return [(chains0[ch0][idx0], chains0[ch1][idx1]) for ch0, idx0, ch1, idx1 in bonds]
 
 
+def format_coordinates(coordinates):
+    res = []
+    for coordinate in coordinates:
+        coor = []
+        for v in coordinate:
+            coor.append((v[0],v[1], v[2]))
+        res.append(coor)
+    return res
+
+
 def calc_angles():
     pass
 
@@ -116,7 +126,8 @@ def get_chain_angle_constraints(chain, bond, first_chain=True):
 def get_joint_angles(chains0, chains1, bonds):
     res = []
     for i in range(len(bonds)):
-        res.append(get_chain_angle_constraints(chains0, bonds[i]))
+        curr_bond_lst = []
+        curr_bond_lst.append(get_chain_angle_constraints(chains0, bonds[i]))
 
         Conf_a_Chain_a, Conf_a_Chain_b = get_coordinates(chains0, bonds)[i]
         Conf_b_Chain_a, Conf_b_Chain_b = get_coordinates(chains1, bonds)[i]
@@ -126,9 +137,10 @@ def get_joint_angles(chains0, chains1, bonds):
                                           Conf_a_Chain_b[0], Conf_a_Chain_b[1], Conf_a_Chain_b[2])
         second_conf_angles = calc_rotation(mid_point[0], mid_point[1], mid_point[2],
                                            Conf_b_Chain_b[0], Conf_b_Chain_b[1], Conf_b_Chain_b[2])
-        res.append([[angle_a - angle_b for angle_a, angle_b in zip(first_conf_angles, second_conf_angles)]])
+        curr_bond_lst.append([[angle_a - angle_b for angle_a, angle_b in zip(first_conf_angles, second_conf_angles)]])
 
-        res.append(get_chain_angle_constraints(chains1, bonds[i], False))
+        curr_bond_lst.append(get_chain_angle_constraints(chains1, bonds[i], False))
+        res.append(curr_bond_lst)
     return res
 
 
@@ -137,17 +149,21 @@ def get_constraint_lengths(chains0, chains1, bonds, pin_length=0.05, pin_radius=
         return abs(2 * pin_length * math.sin(x)) + pin_radius
     res = []
     joints_anlges = get_joint_angles(chains0, chains1, bonds)
-    for joint in joints_anlges:
-        res.append([(calc(a1), calc(a2)) for a1, a2 in joint])
+    for bond in joints_anlges:
+        bond_joints = []
+        for joint in bond:
+            bond_joints.append((calc(joint[0][0]), calc(joint[0][1])))
+        res.append(bond_joints)
     return res
 
 
 if __name__ == '__main__':
-    protein = '2JUV'
+    protein = '2MXU'
     print('{}:'.format(protein))
     _chains0, _chains1 = parse_chains('data/{}.pdb'.format(protein))
     _bonds = find_virtualbonds(_chains0, _chains1)
     print('  bonds: {}'.format(_bonds))
-    print('  A coordinates: {}'.format(get_coordinates(_chains0, _bonds)))
-    print('  B coordinates: {}'.format(get_coordinates(_chains1, _bonds)))
-    print('  Constraint dimensions: {}'.format(get_constraint_lengths(_chains0, _chains1, _bonds)))
+    print('  A coordinates: {}'.format(format_coordinates(get_coordinates(_chains0, _bonds))))
+    print('  B coordinates: {}'.format(format_coordinates(get_coordinates(_chains1, _bonds))))
+    print('  bonds =  {}'.format(format_coordinates(get_coordinates(_chains0, _bonds))))
+    print('  all_constraints = {}'.format(get_constraint_lengths(_chains0, _chains1, _bonds)))
