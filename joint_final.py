@@ -61,7 +61,145 @@ def groupify(named, objs):
     return group, instance
 
 
-def create_joint(length, constraint_x, constraint_y, size=1.0, cut=False):
+def add_cylinder(z1, z2, radius=.2, name='Cylinder', material=None):
+    bpy.ops.mesh.primitive_cylinder_add(radius=radius,
+                                        depth=z2-z1,
+                                        location=(0, 0, (z1+z2)/2))
+
+    bpy.context.active_object.name = name
+    cylinder = bpy.data.objects[name]
+
+    if material:
+        cylinder.active_material = material
+
+    return cylinder
+
+
+def add_sphere(size, location, name='Sphere', hide=False, material=None):
+    bpy.ops.mesh.primitive_uv_sphere_add(size=size, location=location)
+    bpy.context.active_object.name = name
+    sphere = bpy.data.objects[name]
+
+    if hide:
+        sphere.hide = True
+        sphere.hide_render = True
+
+    if material:
+        sphere.active_material = material
+
+    return sphere
+
+
+def add_cube(scale, location, name='Cube', hide=False):
+    bpy.ops.mesh.primitive_cube_add(radius=1, location=location)
+    bpy.context.active_object.name = name
+    cube = bpy.data.objects[name]
+    cube.scale = scale
+
+    if hide:
+        cube.hide = True
+        cube.hide_render = True
+
+    return cube
+
+
+def add_difference_modifier(target, subtructor, name='Modifier'):
+    modifier = target.modifiers.new(type='BOOLEAN', name=name)
+    modifier.object = subtructor
+    modifier.operation = 'DIFFERENCE'
+
+
+def add_ball_and_socket(z, constraint_x, constraint_y, name='_BallAndSocket', prefix='', size=1.0):
+    size_socket = size
+    size_ball = .95 * size
+    size_wrapper = (size_socket + size_ball) / 2
+    size_snap = .1 * size
+    radius_safety = .02 * size
+
+    socket_ball_diff = size_socket - size_ball
+    socket_wrapper_diff = size_socket - size_ball
+    snap_diff = (size_socket + size_ball) / 2 - 0.95 * size_snap
+
+    z_socket = z
+    z_ball = z_socket + socket_ball_diff
+    z_wrapper = z_socket + socket_wrapper_diff
+    y_snap = snap_diff
+
+    ball_bottom = z_ball - size_ball
+    socket_bottom = z_socket - size_socket
+    z_ball_socket_middle = (ball_bottom + socket_bottom) / 2
+    z1_safety = z_ball_socket_middle
+    z2_safety = ball_bottom
+    length_safety = z2_safety - z1_safety
+
+    constraint_depth = 1.1 * length_safety
+    constraint_scale = (constraint_x, constraint_y, constraint_depth)
+
+    location_socket = (0, 0, z_socket)
+    location_ball = (0, 0, z_ball)
+    location_wrapper = (0, 0, z_wrapper)
+    location_snap = (0, y_snap, 0)
+    location_constraint = (0, 0, ball_bottom)
+
+    socket = add_sphere(size_socket, location_socket, '__Socket', material=CYAN_MATERIAL)
+    ball = add_sphere(size_ball, location_ball, '__Ball', material=VIOLET_MATERIAL)
+    ball_wrapper = add_sphere(size_wrapper, location_wrapper, '__BallWrapper', hide=True)
+    add_difference_modifier(target=socket, subtructor=ball_wrapper, name='BallWrapperModifier')
+    safety = add_cylinder(z1_safety, z2_safety, radius_safety, '__Safety', material=VIOLET_MATERIAL)
+    constraint = add_cube(constraint_scale, location_constraint, '__Constraint', hide=True)
+    add_difference_modifier(target=socket, subtructor=constraint, name='ConstraintModifier')
+    snap = add_sphere(size_snap, location_snap, '__Snap', material=VIOLET_MATERIAL)
+    add_difference_modifier(target=ball, subtructor=snap, name='SnapModifier')
+
+    objs = (socket, ball, ball_wrapper, safety, constraint, snap)
+    _, ball_and_socket = groupify(name, objs)
+
+    return ball_and_socket, objs
+
+
+def create_bond(length, constraints, size=1.0, name='_Bond'):
+    """
+    :param length: the length of the joint
+    :param constraints: itarable[Tuple] of length 3, pairs of contraint_x, constraint_y
+    :param size: size of each ball-and-socket
+    :param name: name of the joint
+    :return: joint
+    """
+    z1, z2, z3 = 0, length/2, length
+
+    constraint_x, constraint_y = constraints[0]
+    lower_joint, lower_joint_objs = add_ball_and_socket(0, constraint_x, constraint_y,
+                                                        name='_LowerBallAndSocket',
+                                                        size=size)
+
+    constraint_x, constraint_y = constraints[1]
+    middle_joint, middle_joint_objs = add_ball_and_socket(length/2, constraint_x, constraint_y,
+                                                          name='_MiddleBallAndSocket',
+                                                          size=size)
+
+    constraint_x, constraint_y = constraints[2]
+    upper_joint, upper_joint_objs = add_ball_and_socket(length, constraint_x, constraint_y,
+                                                        name='_UpperBallAndSocket',
+                                                        size=size)
+
+    eps = 0.01
+    lower_cylinder = add_cylinder(z1+size-eps, z2-size+eps,
+                                  radius=.2*size,
+                                  name='_LowerCylinder',
+                                  material=GOLD_MATERIAL)
+
+    upper_cylinder = add_cylinder(z2+size-eps, z3-size+eps,
+                                  radius=.2*size,
+                                  name='_UpperCylinder',
+                                  material=GOLD_MATERIAL)
+
+    objs = (lower_joint, middle_joint, upper_joint, lower_cylinder, upper_cylinder)
+    _, bond = groupify(name, objs)
+
+    return bond, objs
+
+
+def create_joint(length, constraint_x, constraint_y, size=1.0, cut=False):  # old...
     x1, y1, z1 = 0, 0, 0
     x2, y2, z2 = 0, 0, length
     dx, dy, dz = 0, 0, 1
@@ -191,17 +329,17 @@ def create_joint(length, constraint_x, constraint_y, size=1.0, cut=False):
     return joint, objs
 
 
-def place_joint(joint, x1, y1, z1, x2, y2, z2):
+def place_bond(obj, x1, y1, z1, x2, y2, z2):
     phi, theta = calc_rotation(x1, y1, z1, x2, y2, z2)
 
-    joint.location = (x1, y1, z1)
-    joint.rotation_euler[1] = theta
-    joint.rotation_euler[2] = phi
+    obj.location = (x1, y1, z1)
+    obj.rotation_euler[1] = theta
+    obj.rotation_euler[2] = phi
 
 
-def add_joint(x1, y1, z1, x2, y2, z2, constraint_x, constraint_y):
+def add_joint(x1, y1, z1, x2, y2, z2, constraint_x, constraint_y):  # old...
     joint, _ = create_joint(calc_distance(x1, y1, z1, x2, y2, z2), constraint_x, constraint_y)
-    place_joint(joint, x1, y1, z1, x2, y2, z2)
+    place_bond(joint, x1, y1, z1, x2, y2, z2)
 
     return joint
 
@@ -221,8 +359,8 @@ def cut_objs(objs):
 
 
 # 2JUV
-# bonds = [((0.79, -6.38, -3.73), (-2.86, 2.24, -2.94))]
-# constraint_lengths = [(0.021463302826165993, 0.02654762928946491)]
+bonds = [((8.94, -3.23, 0.10), (9.78, 0.87, 0.99))]
+constraint_lengths = [(0.036765104309912644, 0.024223583174299002)]
 
 # 2LME
 # bonds = [((12.89, 2.09, 1.05), (4.08, -7.50, -11.19)), ((11.04, -2.69, 5.87), (-3.16, 9.33, 3.85))]
@@ -237,18 +375,28 @@ def cut_objs(objs):
 # constraint_lengths = [(0.02369762393644306, 0.021934923197533828), (0.026038403128002662, 0.023316347828134354)]
 
 # 2MXR (OK)
-bonds = [((3.74, -1.34, -2.70), (20.62, 0.35, 12.36))]
-constraint_lengths = [(0.0224145972639394, 0.02294503172530169)]
+# bonds = [((3.74, -1.34, -2.70), (20.62, 0.35, 12.36))]
+# constraint_lengths = [(0.0224145972639394, 0.02294503172530169)]
 
 # 2RVB (bad...)
 # bonds = [((-3.26, -6.94, 8.39), (-6.60, 2.19, -1.94))]
 # constraint_lengths = [(0.0356540432182613, 0.02797159016840993)]
 
-_joint, _objs = None, None
-for ((x1, y1, z1), (x2, y2, z2)), (_constraint_x, _constraint_y) in zip(bonds, constraint_lengths):
-    _joint, _objs = create_joint(calc_distance(x1, y1, z1, x2, y2, z2), _constraint_x, _constraint_y, cut=False)
-    place_joint(_joint, x1, y1, z1, x2, y2, z2)
+# _joint, _objs = None, None
+# for ((x1, y1, z1), (x2, y2, z2)), (_constraint_x, _constraint_y) in zip(bonds, constraint_lengths):
+#     _joint, _objs = create_joint(calc_distance(x1, y1, z1, x2, y2, z2), _constraint_x, _constraint_y, cut=False)
+#     place_joint(_joint, x1, y1, z1, x2, y2, z2)
 
 
+# add_ball_and_socket(0, 0.025, 0.025)
 
+# _constraints = ((0.025, 0.025), (0.025, 0.025), (0.025, 0.025))
+# create_bond(10, _constraints)
+
+_bond, _objs = None, None
+all_constraints = [((0.025, 0.025), (0.025, 0.025), (0.025, 0.025))]  # TODO: override! (edit constraint_lengths and use it)
+for ((x1, y1, z1), (x2, y2, z2)), _constraints in zip(bonds, all_constraints):
+    length = calc_distance(x1, y1, z1, x2, y2, z2)
+    _bond, _objs = create_bond(length, _constraints)
+    place_bond(_bond, x1, y1, z1, x2, y2, z2)
 
