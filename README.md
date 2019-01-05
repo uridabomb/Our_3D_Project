@@ -52,7 +52,7 @@ https://docs.blender.org/api/blender_python_api_2_59_2/info_tips_and_tricks.html
 - Understanding the movement and structure of molecules is one of the main research areas in bioinformatics
 
 
-## Why proteins
+### Why proteins
 - Chain structure - only a finite set of points to connect each chain
 - A real world problem
 - Data already exists
@@ -78,6 +78,7 @@ Given a multi-chain molecular object with multiple conformations, print a viable
 
 ### Virtual bonds
 For each pair of chains, a, b the best virtual bond between the chains is defined as
+
 <img src="https://latex.codecogs.com/svg.latex?\dpi{300}&space;\large&space;v_{a,b}=&space;\min_{i,j\in[M]\times[N]}\left&space;|&space;\left&space;\|&space;x_{i,a}^0&space;-&space;x_{j,b}^0\right&space;\|&space;-&space;\left&space;\|&space;x_{i,a}^1&space;-&space;x_{j,b}^1&space;\right&space;\|&space;\right&space;|&space;&plus;&space;\left&space;\|&space;x_{i,a}^0&space;-&space;x_{j,b}^0&space;\right&space;\|" title="\large v_{a,b}= \min_{i,j\in[M]\times[N]}\left | \left \| x_{i,a}^0 - x_{j,b}^0\right \| - \left \| x_{i,a}^1 - x_{j,b}^1 \right \| \right | + \left \| x_{i,a}^0 - x_{j,b}^0 \right \|" />
 
 We find the minimum amount of virtual bonds which is needed to connect the structure by running MST on all pairs.
