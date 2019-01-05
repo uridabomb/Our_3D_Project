@@ -125,7 +125,7 @@ def get_chain_angle_constraints(chain, bond, first_chain=True):
 def get_joint_angles(chains0, chains1, bonds):
     res = []
     for i in range(len(bonds)):
-        curr_bond_lst = [get_chain_angle_constraints(chains0, bonds[i])]
+        curr_bond_lst = [get_chain_angle_constraints((chains0[0], chains1[0]), bonds[i])]
 
         conf_a_chain_a, conf_a_chain_b = get_coordinates(chains0, bonds)[i]
         conf_b_chain_a, conf_b_chain_b = get_coordinates(chains1, bonds)[i]
@@ -137,7 +137,7 @@ def get_joint_angles(chains0, chains1, bonds):
                                            conf_b_chain_b[0], conf_b_chain_b[1], conf_b_chain_b[2])
         curr_bond_lst.append([[angle_a - angle_b for angle_a, angle_b in zip(first_conf_angles, second_conf_angles)]])
 
-        curr_bond_lst.append(get_chain_angle_constraints(chains1, bonds[i], False))
+        curr_bond_lst.append(get_chain_angle_constraints((chains0[1], chains1[1]), bonds[i], False))
         res.append(curr_bond_lst)
     return res
 
