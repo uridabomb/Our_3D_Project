@@ -57,6 +57,9 @@ https://docs.blender.org/api/blender_python_api_2_59_2/info_tips_and_tricks.html
 - A real world problem
 - Data already exists
 
+![Alt text](/images/protein1.png?raw=true "Protein 1")
+![Alt text](/images/protein2.gif?raw=true "Protein 2")
+
 
 ### Printing molecules
 - Each molecule is made out of one ore more chains
@@ -88,14 +91,22 @@ We find the minimum amount of virtual bonds which is needed to connect the struc
 - The dimensions of the constraints box are determined by the angles of the transformation, and the safety dimensions
 - The ”snap” should hold the protein model in conformation A
 
+![Alt text](/images/structure.png?raw=true "Joint structure")
+![Alt text](/images/joints.png?raw=true "Joints")
+![Alt text](/images/joint_movement.gif?raw=true "Joint movement")
+
 
 ### Problems and difficulties
 - Computational geometry - representing each vector as two angles, rotation and translation matrices
 - 3D-Manufacturing - finding the best joint, and adding constraints
 
+![Alt text](/images/ball-and-socket.png?raw=true "Ball-and-socket")
+![Alt text](/images/angles.png?raw=true "Angles")
+
 
 ### Results
-
+![Alt text](/images/protein_move1.gif?raw=true "Protein move 1")
+![Alt text](/images/protein_move2.gif?raw=true "Protein move 2")
 
 
 ### Future work
