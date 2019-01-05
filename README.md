@@ -52,6 +52,12 @@ https://docs.blender.org/api/blender_python_api_2_59_2/info_tips_and_tricks.html
 - Understanding the movement and structure of molecules is one of the main research areas in bioinformatics
 
 
+## Why proteins
+- Chain structure - only a finite set of points to connect each chain
+- A real world problem
+- Data already exists
+
+
 ### Printing molecules
 - Each molecule is made out of one ore more chains
 - When printing, the structure will collapse as the chains are not physically connected
