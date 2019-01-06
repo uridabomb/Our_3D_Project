@@ -5,8 +5,11 @@ A final project by Uri Avron, Amnon Catav & Ori Yoran in 3D modeling and printin
 
 Final presentation can be found at: https://docs.google.com/presentation/d/1mR_NRwFVNsvtQpUSAWchAgTbV4Zn1_YVFoStaQPovMI/edit?usp=sharing
 
+
 uriavron@gmail.com
+
 catav.amnon@gmail.com
+
 ori_y_r@hotmail.com
 
 ## Prerequisites
