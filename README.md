@@ -20,7 +20,7 @@ For installing the required python packages, you may run from the project direct
 By running `joint_cut.py` script in Blender, our ball-and-socket joint is created with a cut view. This is helpful for a better look inside the joint.
 
 
-### Loading a protein in Blender
+### Loading a protein object in Blender
 After installing the Atomic Blender add-on, you should be able to import a protein's pdb file (`File -> Import -> Protein Data Bank (.pdb)`), which will create a protein object in the opened Blender scene.
 
 You may find pdb files at: https://www.rcsb.org/
