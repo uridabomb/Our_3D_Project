@@ -1,7 +1,7 @@
 # Hold it, Move it
 A Minimal Automatic Joint Modeling for Moving Molecular Objects
 
-A final project by Uri Avron, Amnon Catav & Ori Yoran in 3D modeling and printing class 0368-4154 of Dr. Amit Bermano, Tel-Aviv University, fall semester 2019.
+A final project by Uri Avron, Amnon Catav & Ori Yoran in 3D modeling and printing class 0368-4154 of Amit H. Bermano, Tel-Aviv University, fall semester 2019.
 
 Final presentation can be found at: https://docs.google.com/presentation/d/1mR_NRwFVNsvtQpUSAWchAgTbV4Zn1_YVFoStaQPovMI/edit?usp=sharing
 
@@ -120,4 +120,4 @@ We find the minimum amount of virtual bonds which is needed to connect the struc
 
 
 ### Acknowledgments
-We would like to thank Dr. Amit Bermano for the time and guidance.
+We would like to thank Amit H. Bermano (https://www.cs.tau.ac.il/~amberman/) for the time and guidance.
