@@ -117,3 +117,7 @@ We find the minimum amount of virtual bonds which is needed to connect the struc
 ### Bibliography
 - JointFit - 3D-Printing of Non-Assembly Articulated Models: http://reality.cs.ucl.ac.uk/projects/jointfit/jointfit.html
 - A New Approach for Modeling of Conformational Changes of Multi-Chained Proteins: https://www.sciencedirect.com/science/article/pii/S187705091632676X
+
+
+## Acknowledgments
+We would like to thank Dr. Amit Bermano for the time and guidance.
