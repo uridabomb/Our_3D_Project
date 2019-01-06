@@ -57,7 +57,6 @@ https://docs.blender.org/api/blender_python_api_2_59_2/info_tips_and_tricks.html
 - A real world problem
 - Data already exists
 
-![Alt text](/images/protein1.png?raw=true "Protein 1")
 ![Alt text](/images/protein2.gif?raw=true "Protein 2")
 
 
@@ -98,10 +97,10 @@ We find the minimum amount of virtual bonds which is needed to connect the struc
 
 ### Problems and difficulties
 - Computational geometry - representing each vector as two angles, rotation and translation matrices
-- 3D-Manufacturing - finding the best joint, and adding constraints
-
-![Alt text](/images/ball-and-socket.png?raw=true "Ball-and-socket")
 ![Alt text](/images/angles.png?raw=true "Angles")
+
+- 3D-Manufacturing - finding the best joint, and adding constraints
+![Alt text](/images/ball-and-socket.png?raw=true "Ball-and-socket")
 
 
 ### Results
