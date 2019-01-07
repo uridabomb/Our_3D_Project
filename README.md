@@ -95,6 +95,12 @@ We find the minimum amount of virtual bonds which is needed to connect the struc
 ![Alt text](/images/joints.png?raw=true "Joints")
 ![Alt text](/images/joint_movement.gif?raw=true "Joint movement")
 
+#### Shoulder - elbow - wrist
+- Each chain needs to be able to spin around its own axis
+- The two chains need to change their conformation in space
+
+![Alt text](/images/shoulder_elbow_wrist.png?raw=true "Shoulder - Elbow - Wrist")
+
 
 ### Problems and difficulties
 - Computational geometry - representing each vector as two angles, rotation and translation matrices
