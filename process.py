@@ -19,7 +19,8 @@ def parse_chains(pdbfilename):
     chains0, chains1 = [], []
 
     models = list(structure)
-    assert len(models) > 1
+    assert len(models) > 1, "There is only one conformation for this protein. Please provide a pdb with at least two."
+    assert len(list(models[0].get_chains())) > 1, "There is only one chain in this protein, so no joints are needed."
 
     for model, chains in zip((models[0], models[-1]), (chains0, chains1)):
         for chain in model:

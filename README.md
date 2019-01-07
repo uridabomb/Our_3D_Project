@@ -1,9 +1,10 @@
 # Hold it, Move it
 A Minimal Automatic Joint Modeling for Moving Molecular Objects
 
-A 3D-modeling project by Uri Avron, Amnon Catav & Ori Yoran, Tel-Aviv University, fall semester 2019.
+A final project by Uri Avron (uriavron@gmail.com), Amnon Catav (catav.amnon@gmail.com) and Ori Yoran (ori_y_r@hotmail.com) in Algorithms for Modeling, Fabrication and Printing of 3D Objects class of Amit H. Bermano, Tel-Aviv University, Winter semester 2018.
 
 Final presentation can be found at: https://docs.google.com/presentation/d/1mR_NRwFVNsvtQpUSAWchAgTbV4Zn1_YVFoStaQPovMI/edit?usp=sharing
+
 
 ## Prerequisites
 - Python 3
@@ -19,7 +20,7 @@ For installing the required python packages, you may run from the project direct
 By running `joint_cut.py` script in Blender, our ball-and-socket joint is created with a cut view. This is helpful for a better look inside the joint.
 
 
-### Loading a protein in Blender
+### Loading a protein object in Blender
 After installing the Atomic Blender add-on, you should be able to import a protein's pdb file (`File -> Import -> Protein Data Bank (.pdb)`), which will create a protein object in the opened Blender scene.
 
 You may find pdb files at: https://www.rcsb.org/
@@ -57,6 +58,8 @@ https://docs.blender.org/api/blender_python_api_2_59_2/info_tips_and_tricks.html
 - A real world problem
 - Data already exists
 
+![Alt text](/images/protein2.gif?raw=true "Protein 2")
+
 
 ### Printing molecules
 - Each molecule is made out of one ore more chains
@@ -88,14 +91,22 @@ We find the minimum amount of virtual bonds which is needed to connect the struc
 - The dimensions of the constraints box are determined by the angles of the transformation, and the safety dimensions
 - The ”snap” should hold the protein model in conformation A
 
+![Alt text](/images/structure.png?raw=true "Joint structure")
+![Alt text](/images/joints.png?raw=true "Joints")
+![Alt text](/images/joint_movement.gif?raw=true "Joint movement")
+
 
 ### Problems and difficulties
 - Computational geometry - representing each vector as two angles, rotation and translation matrices
+![Alt text](/images/angles.png?raw=true "Angles")
+
 - 3D-Manufacturing - finding the best joint, and adding constraints
+![Alt text](/images/ball-and-socket.png?raw=true "Ball-and-socket")
 
 
 ### Results
-
+![Alt text](/images/protein_move1.gif?raw=true "Protein move 1")
+![Alt text](/images/protein_move2.gif?raw=true "Protein move 2")
 
 
 ### Future work
@@ -104,6 +115,10 @@ We find the minimum amount of virtual bonds which is needed to connect the struc
 - Multiple confirmations, multiple snaps
 
 
-### Bibliography
+### References
 - JointFit - 3D-Printing of Non-Assembly Articulated Models: http://reality.cs.ucl.ac.uk/projects/jointfit/jointfit.html
 - A New Approach for Modeling of Conformational Changes of Multi-Chained Proteins: https://www.sciencedirect.com/science/article/pii/S187705091632676X
+
+
+### Acknowledgments
+We would like to thank Amit H. Bermano (https://www.cs.tau.ac.il/~amberman/) for the time and guidance.
