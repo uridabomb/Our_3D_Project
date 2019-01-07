@@ -108,6 +108,9 @@ We find the minimum amount of virtual bonds which is needed to connect the struc
 ![Alt text](/images/protein_move1.gif?raw=true "Protein move 1")
 ![Alt text](/images/protein_move2.gif?raw=true "Protein move 2")
 
+![Alt text](/images/cut.png?raw=true "Cut")
+![Alt text](/images/uncut.png?raw=true "Uncut")
+
 
 ### Future work
 - Validations - collisions, size of joints
