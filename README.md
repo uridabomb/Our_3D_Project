@@ -102,7 +102,7 @@ The minimal bonds needed to connect the structure may be found by running MST on
 ![Alt text](/images/shoulder_elbow_wrist.png?raw=true "Shoulder - Elbow - Wrist")
 
 
-### Problems and difficulties
+### Challenges
 - Computational geometry - representing each vector as two angles, rotation and translation matrices
 ![Alt text](/images/angles.png?raw=true "Angles")
 
