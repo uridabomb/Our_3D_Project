@@ -1,7 +1,7 @@
 # Hold it, Move it
-A Minimal Automatic Joint Modeling for Moving Molecular Objects
+A Minimal Automatic Joint Modelling for Moving Molecular Objects
 
-A final project by Uri Avron (uriavron@gmail.com), Amnon Catav (catav.amnon@gmail.com) and Ori Yoran (ori_y_r@hotmail.com) in Algorithms for Modeling, Fabrication and Printing of 3D Objects class of Amit H. Bermano (https://www.cs.tau.ac.il/~amberman/), Tel-Aviv University, Winter semester 2018.
+A final project by Uri Avron (uriavron@gmail.com), Amnon Catav (catav.amnon@gmail.com) and Ori Yoran (ori_y_r@hotmail.com) in Algorithms for Modelling, Fabrication and Printing of 3D Objects class of Amit H. Bermano (https://www.cs.tau.ac.il/~amberman/), Tel-Aviv University, Winter semester 2018.
 
 Final presentation can be found at: https://docs.google.com/presentation/d/1mR_NRwFVNsvtQpUSAWchAgTbV4Zn1_YVFoStaQPovMI/edit?usp=sharing
 
